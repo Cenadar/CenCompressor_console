@@ -16,10 +16,12 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp \
-    ccompressor.cpp
+    ccompressor.cpp \
+    chuffmantree.cpp
 
 HEADERS += \
-    ccompressor.h
+    ccompressor.h \
+    chuffmantree.h
 
 OTHER_FILES += \
     README.md
