@@ -1,14 +1,22 @@
 #include "cfilereader.h"
 
 bool CFileReader::eof() {
-  return fin.eof();
 }
 
-CFileReader::get_bit() {
+bool CFileReader::get_bit() {
 }
 
-CFileReader::CFileReader() {
-  fin.open("");
-  if (!fin.is_open())
-    throw(string("Cannot open input file: " + input_file_name));
+const vector<bool> CFileReader::get_bits(size_t count) {
+}
+
+unsigned char get_byte() {
+}
+
+CFileReader::CFileReader(const string &file_name) {
+  fin.open();
+  if (!fin.is_open()) throw(string("Cannot open input file: " + file_name));
+}
+
+CFileReader::~CFileReader() {
+  fin.close()''
 }
