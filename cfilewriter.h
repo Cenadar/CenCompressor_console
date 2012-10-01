@@ -6,15 +6,16 @@
 
 class CFileWriter {
  public:
-  bool eof();
-  bool get_bit();
-  unsigned char get_byte();
-  const vector<bool>& get_bits(size_ t count);
+  void put_bit(bool bit);
+  void put_byte(unsigned char byte);
+  void put_bits(const vector<bool>& bits);
 
-  CFileWriter(string input_file_name);
+  CFileWriter(string file_name);
   ~CFileWriter();
  private:
-  ifstream fin;
+  void try_put();
+
+  ofstream fout;
   queue<bool> q;
 };
 
