@@ -18,8 +18,9 @@ class CFileReader {
   CFileReader(const string &file_name);
   ~CFileReader();
  private:
+  void read_byte();
   ifstream fin;
-  queue<bool> q;
+  queue<bool> bits_queue;
 };
 
 
