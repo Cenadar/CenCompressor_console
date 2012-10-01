@@ -11,57 +11,68 @@
 #include <iostream>
 #include <bitset>
 #include "chuffmantree.h"
+#include "cfilewriter.h"
 
 using namespace std;
-
-typedef unsigned char uchar;
 
 class CCompressor;
 
 class CAbstractCharDoer {
  public:
   virtual void Init() = 0;
-  virtual void Do(char c) = 0;
+  virtual void Do(unsigned char c) = 0;
+  virtual void Close() = 0;
 };
 
 class CDoerCalculateFrequency: public CAbstractCharDoer {
  public:
   void Init() {frequency.clear();}
-  void Do(char c) {++frequency[c];}
-
-  const map<char, size_t> &get_frequency() {return frequency;}
+  void Do(unsigned char c) {++frequency[c];}
+  CDoerCalculateFrequency(CCompressor *Compressor_): Compressor(Compressor_) {}  
+  void Close();
  private:
-  map<char, size_t> frequency;
+  map<unsigned char, size_t> frequency;
+  CCompressor *Compressor;
 };
 
 class CDoerReplaceWithCodes: public CAbstractCharDoer {
  public:
   void Init() {}
-  void Do(char c);
+  void Do(unsigned char c);
+  void Close() {}
+ private:
   CCompressor *Compressor;
-  void set_compressor(const CCompressor &Compr_) {
-    Compressor = (CCompressor*)&Compr_;
-  }
+};
+
+class CFileWriterCloser {
+ public:
+  CFileWriterCloser(CFileWriter *FW_): FW(FW_) {}
+  ~CFileWriterCloser() {delete FW;}
+ private:
+  CFileWriter *FW;
 };
 
 class CCompressor {
  public:
   CCompressor() {}
   ~CCompressor() {}
-  void compress(const string &input_file_name, const string &output_file_name);
+  void compress(const string &input_file_name_,
+                const string &output_file_name_);
  private:
+  string input_file_name;
+  string output_file_name;
+  CFileWriter *FW;
+
   void ForEachChar(CAbstractCharDoer *Doer);
 
   void write_information_byte();
   void write_tree();
   void put_byte();
 
-  friend void CDoerReplaceWithCodes::Do(char);
+  friend void CDoerCalculateFrequency::Close();
+  friend void CDoerReplaceWithCodes::Do(unsigned char);
 
-  queue<bool> bit_queue;
-  ifstream fin;
-  ofstream fout;
-  map<char, size_t> frequency;
+  map<unsigned char, size_t> frequency;
   static const size_t block_size = 100;
   CHuffmanTree HuffTree;
   string in_file_name, out_file_name;

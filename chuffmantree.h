@@ -25,11 +25,7 @@ typedef struct tagTree {
                                             data(abstract_char_value) {
     times = (left != NULL ? left->times : 0) +
             (right != NULL ? right->times : 0);
-  }
-  /*tagTree(): left(NULL),
-             right(NULL),
-             data(abstract_char_value),
-             times(0) {};*/
+  }  
   bool operator()(const tagTree *a, const tagTree *b) {
     return a->times > b->times;
   }
@@ -41,11 +37,11 @@ class CHuffmanTree {
                   result_bits_count(0) {}
   ~CHuffmanTree();
   bool empty();
-  void build(const map<char, size_t> &frequency);  
+  void build(const map<unsigned char, size_t> &frequency);
   void erase();
 
   size_t get_result_bits_count() {return result_bits_count;}
-  const vector<bool> &get_code(char curchar);
+  const vector<bool> &get_code(unsigned char curchar);
  private:
   void DFS(PTree vertex, vector<bool> *code);
   void erase(PTree node);
