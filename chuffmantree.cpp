@@ -12,31 +12,27 @@ void CHuffmanTree::build(const map<char, size_t> &frequency) {
   if (!empty()) erase();
   if (frequency.empty()) return;
 
-  typedef pair<size_t, PTree> TCharFreq;
-  priority_queue<TCharFreq, vector<TCharFreq>, greater<TCharFreq> > char_queue;
+
+  priority_queue<PTree, vector<PTree>, greater<PTree> > char_queue;
   for(map<char, size_t>::const_iterator it = frequency.begin();
       it != frequency.end(); ++it) {
-        PTree char_node = new TTree(NULL, NULL, it->first);
-        char_queue.push(make_pair(it->second, char_node));
+        PTree char_node = new TTree(NULL, NULL, it->first, it->second);
+        char_queue.push(char_node);
     }
 
-  TCharFreq char1, char2;
+  PTree char1, char2;
   while(char_queue.size() >= 2) {
-    char1 = char_queue.top();
-    char_queue.pop();
-    char2 = char_queue.top();
-    char_queue.pop();
-    PTree abstract_char = new TTree(char1.second, char2.second);
-    char_queue.push(make_pair(char1.first + char2.first, abstract_char));
+    char1 = char_queue.top();  char_queue.pop();
+    char2 = char_queue.top();  char_queue.pop();
+    char_queue.push(new TTree(char1, char2));
   }
-  root = char_queue.top().second;
-  input_file_length_count = char_queue.top().first;
-
+  root = char_queue.top();
+  input_file_length = root->times;
   DFS(root, new vector<bool>);
 }
 
 void CHuffmanTree::erase() {
-  result_file_length = 0;
+  result_bits_count = 0;
   erase(root);
   root = NULL;
 }
@@ -55,7 +51,7 @@ const vector<bool> &CHuffmanTree::get_code(char curchar) {
 
 void CHuffmanTree::DFS(PTree vertex, vector<bool> *code) {
   if (vertex->left == NULL) {
-    //result_file_length += code->size()*vertex->times;
+    result_bits_count += code->size()*vertex->times;
     char_code[vertex->data] = *code;
   } else {
     code->push_back(0);

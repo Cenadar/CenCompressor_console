@@ -17,26 +17,34 @@ const char abstract_char_value = '\0';
 typedef struct tagTree {
   tagTree *left, *right;
   char data;
-  tagTree(tagTree *left_, tagTree *right_, char data_): left(left_),
-                                                        right(right_),
-                                                        data(data_) {}
+  size_t times;
+  tagTree(tagTree *left_, tagTree *right_, char data_, size_t times_):
+    left(left_), right(right_), data(data_), times(times_) {}
   tagTree(tagTree *left_, tagTree *right_): left(left_),
                                             right(right_),
-                                            data(abstract_char_value) {}
-  tagTree(): left(NULL),
+                                            data(abstract_char_value) {
+    times = (left != NULL ? left->times : 0) +
+            (right != NULL ? right->times : 0);
+  }
+  /*tagTree(): left(NULL),
              right(NULL),
-             data(abstract_char_value) {}
+             data(abstract_char_value),
+             times(0) {};*/
+  bool operator()(const tagTree *a, const tagTree *b) {
+    return a->times > b->times;
+  }
 } TTree, *PTree;
 
 class CHuffmanTree {
  public:
   CHuffmanTree(): root(NULL),
-                  input_file_length_count(0),
-                  result_file_length(0) {}
+                  result_bits_count(0) {}
   ~CHuffmanTree();
   bool empty();
   void build(const map<char, size_t> &frequency);  
   void erase();
+
+  size_t get_result_bits_count() {return result_bits_count;}
   const vector<bool> &get_code(char curchar);
  private:
   void DFS(PTree vertex, vector<bool> *code);
@@ -44,8 +52,8 @@ class CHuffmanTree {
 
   map<char, vector<bool> > char_code;
   PTree root;
-  size_t input_file_length_count;
-  size_t result_file_length;
+  size_t input_file_length;
+  size_t result_bits_count;
 };
 
 #endif // CHUFFMANTREE_H

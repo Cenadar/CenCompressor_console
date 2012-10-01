@@ -17,11 +17,15 @@ TEMPLATE = app
 
 SOURCES += main.cpp \
     ccompressor.cpp \
-    chuffmantree.cpp
+    chuffmantree.cpp \
+    cfilewriter.cpp \
+    cfilereader.cpp
 
 HEADERS += \
     ccompressor.h \
-    chuffmantree.h
+    chuffmantree.h \
+    cfilewriter.h \
+    cfilereader.h
 
 OTHER_FILES += \
     README.md
