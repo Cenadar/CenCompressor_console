@@ -25,7 +25,7 @@ void CCompressor::compress(const string &input_file_name_,
 
   write_information_byte();
   write_tree();
-  ForEachChar(new CDoerReplaceWithCodes);
+  ForEachChar(new CDoerReplaceWithCodes(this));
 }
 
 void CCompressor::write_information_byte() {

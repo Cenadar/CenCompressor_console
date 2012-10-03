@@ -40,6 +40,7 @@ class CDoerReplaceWithCodes: public CAbstractCharDoer {
   void Init() {}
   void Do(unsigned char c);
   void Close() {}
+  CDoerReplaceWithCodes(CCompressor *Compressor_): Compressor(Compressor_) {}
  private:
   CCompressor *Compressor;
 };
