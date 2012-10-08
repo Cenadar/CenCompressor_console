@@ -11,7 +11,6 @@ int main(int argc, char *argv[]) {
 
   try {
     Compressor.compress(input_file_name, output_file_name);
-    cout << "Compressed succesffully" << endl;
   } catch(string error_message) {
     cout << "ERROR: Compress failed:" << endl;
     cout << error_message << endl;

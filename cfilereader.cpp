@@ -36,6 +36,7 @@ unsigned char CFileReader::get_byte() {
 void CFileReader::read_byte() {
   unsigned char byte;
   byte = fin.get();
+  if (fin.gcount() == 0) throw string("Unexpected end of file");
   for(int i = 7; i >= 0; --i) bits_queue.push((byte >> i) & 1);
 }
 

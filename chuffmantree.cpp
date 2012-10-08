@@ -4,16 +4,17 @@ CHuffmanTree::~CHuffmanTree() {
   erase();
 }
 
-bool CHuffmanTree::empty() {
-  return root == NULL;
-}
+struct comp {
+  bool operator()(const PTree a, const PTree b) {
+    return a->times > b->times;
+  }
+};
 
 void CHuffmanTree::build(const map<unsigned char, size_t> &frequency) {
-  if (!empty()) erase();
+  erase();
   if (frequency.empty()) return;
 
-
-  priority_queue<PTree, vector<PTree>, greater<PTree> > char_queue;
+  priority_queue<PTree, vector<PTree>, comp> char_queue;
   for(map<unsigned char, size_t>::const_iterator it = frequency.begin();
       it != frequency.end(); ++it) {
         PTree char_node = new TTree(NULL, NULL, it->first, it->second);
@@ -29,6 +30,13 @@ void CHuffmanTree::build(const map<unsigned char, size_t> &frequency) {
   root = char_queue.top();
   input_file_length = root->times;
   DFS(root, new vector<bool>);
+}
+
+void CHuffmanTree::build(const map<unsigned char, vector<bool> > &code) {
+  erase();
+
+  /*vector<bool>::iterator it =
+  DFS_set(root, it v, .end());*/
 }
 
 void CHuffmanTree::erase() {

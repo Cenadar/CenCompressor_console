@@ -4,28 +4,46 @@
 #include "cfilereader.h"
 #include "cfilewriter.h"
 
-void CCompressor::ForEachChar(CAbstractCharDoer *Doer) {
-  Doer->Init();
-  CFileReader *FR = new CFileReader(input_file_name);
-  while(!FR->eof()) Doer->Do(FR->get_byte());
-  delete FR;
-  Doer->Close();
-  delete Doer;
-}
+class CFileReaderCloser {
+ public:
+  CFileReaderCloser(CFileReader *FR_): FR(FR_) {}
+  ~CFileReaderCloser() {delete FR;}
+ private:
+  CFileReader *FR;
+};
 
-void CCompressor::compress(const string &input_file_name_,
-                           const string &output_file_name_) {
-  input_file_name = input_file_name_;
-  output_file_name = output_file_name_;
+class CFileWriterCloser {
+ public:
+  CFileWriterCloser(CFileWriter *FW_): FW(FW_) {}
+  ~CFileWriterCloser() {delete FW;}
+ private:
+  CFileWriter *FW;
+};
+
+// Compressing
+
+void CCompressor::compress(const string &input_file_name,
+                           const string &output_file_name) {  
   FW = new CFileWriter(output_file_name);
   CFileWriterCloser FWC(FW);
 
-  ForEachChar(new CDoerCalculateFrequency(this));
+  frequency.clear();
+  FR = new CFileReader(input_file_name);
+  while(!FR->eof()) ++frequency[FR->get_byte()];
+  delete FR;
   HuffTree.build(frequency);
 
   write_information_byte();
   write_tree();
-  ForEachChar(new CDoerReplaceWithCodes(this));
+
+  FR = new CFileReader(input_file_name);
+  while(!FR->eof()) FW->put_bits(HuffTree.get_code(FR->get_byte()));
+  delete FR;
+
+  cout << "Compressed succesffully" << endl;
+  cout << "Input file size: " << HuffTree.get_input_file_size() << endl;
+  cout << "Output file size: ";
+  cout << 1 + 32 + (HuffTree.get_result_bits_count() + 7)/8 << endl;
 }
 
 void CCompressor::write_information_byte() {
@@ -37,26 +55,47 @@ void CCompressor::write_information_byte() {
 void CCompressor::write_tree() {
   vector<bool> used(256, false);
   for(map<unsigned char, size_t>::iterator it = frequency.begin();
-      it != frequency.end(); ++it) {
-      used[int(it->first) & 255] = true;
+    it != frequency.end(); ++it) {
+    used[int(it->first) & 255] = true;
   }
   FW->put_bits(used);
 
   for(map<unsigned char, size_t>::iterator it = frequency.begin();
-      it != frequency.end(); ++it) {
-      FW->put_byte(HuffTree.get_code(it->first).size());
+    it != frequency.end(); ++it) {
+    FW->put_byte((unsigned char)HuffTree.get_code(it->first).size());
   }
 
   for(map<unsigned char, size_t>::iterator it = frequency.begin();
-      it != frequency.end(); ++it) {
-      FW->put_bits(HuffTree.get_code(it->first));
+    it != frequency.end(); ++it) {
+    FW->put_bits(HuffTree.get_code(it->first));
   }
 }
 
-void CDoerReplaceWithCodes::Do(unsigned char c) {
-  Compressor->FW->put_bits(Compressor->HuffTree.get_code(c));
+// Uncompressing
+
+void CCompressor::uncompress(const string &input_file_name,
+                             const string &output_file_name) {
+  FR = new CFileReader(input_file_name);
+  CFileReaderCloser FRC(FR);
+  FW = new CFileWriter(output_file_name);
+  CFileWriterCloser FWC(FW);
+
+  unsigned char inform_byte = FR->get_byte();
+  read_tree();
 }
 
-void CDoerCalculateFrequency::Close() {
-  Compressor->frequency = frequency;
+void CCompressor::read_tree() {
+  vector<bool> used = FR->get_bits(256);
+  map<unsigned char, unsigned char> code_length;
+  map<unsigned char, vector<bool> > codes;
+
+  for(unsigned int i = 0; i < 256; ++i)
+    if (used[i])
+      code_length[i] = FR->get_byte();
+
+  for(unsigned int i = 0; i < 256; ++i)
+    if (used[i])
+      codes[i] = FR->get_bits(code_length[i]);
+
+  HuffTree.build(codes);
 }
