@@ -1,4 +1,5 @@
 #include "cfilewriter.h"
+#include <cassert>
 
 void CFileWriter::put_bit(bool bit) {
   q.push(bit);
@@ -32,7 +33,8 @@ CFileWriter::CFileWriter(const string &file_name) {
 }
 
 CFileWriter::~CFileWriter() {
-  if (!q.empty()) {
+  assert(!(q.size() & 7));
+  if (!q.empty()) {      
     while(q.size() < 8) q.push(0);
     try_put();
   }

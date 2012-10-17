@@ -27,8 +27,10 @@ class CCompressor {
  private:
   void write_information_byte();
   void write_tree();
+  void read_information_byte();
   void read_tree();
 
+  size_t unused_bits;
   CFileReader *FR;
   CFileWriter *FW;
   map<unsigned char, size_t> frequency;

@@ -24,31 +24,39 @@ class CFileWriterCloser {
 
 void CCompressor::compress(const string &input_file_name,
                            const string &output_file_name) {  
-  FW = new CFileWriter(output_file_name);
-  CFileWriterCloser FWC(FW);
+  try {
+    FW = new CFileWriter(output_file_name);
+    CFileWriterCloser FWC(FW);
 
-  frequency.clear();
-  FR = new CFileReader(input_file_name);
-  while(!FR->eof()) ++frequency[FR->get_byte()];
-  delete FR;
-  HuffTree.build(frequency);
+    frequency.clear();
+    FR = new CFileReader(input_file_name);
+    while(!FR->eof()) ++frequency[FR->get_byte()];
+    delete FR;
+    HuffTree.build(frequency);
 
-  write_information_byte();
-  write_tree();
+    write_information_byte();
+    write_tree();
+    FW->put_bits(vector<bool>(unused_bits, false));
 
-  FR = new CFileReader(input_file_name);
-  while(!FR->eof()) FW->put_bits(HuffTree.get_code(FR->get_byte()));
-  delete FR;
+    FR = new CFileReader(input_file_name);
+    while(!FR->eof()) FW->put_bits(HuffTree.get_code(FR->get_byte()));
+    delete FR;
 
-  cout << "Compressed succesffully" << endl;
-  cout << "Input file size: " << HuffTree.get_input_file_size() << endl;
-  cout << "Output file size: ";
-  cout << 1 + 32 + (HuffTree.get_result_bits_count() + 7)/8 << endl;
+    cout << "Compressed succesffully" << endl;
+    cout << "Input file size: " << HuffTree.get_input_file_size() << endl;
+    cout << "Output file size: ";
+    cout << (HuffTree.get_result_bits_count() + 7)/8 << endl;
+  } catch(string error_message) {
+    cout << "ERROR! Compress failed: " << endl;
+    cout << error_message << endl;
+  }
 }
 
 void CCompressor::write_information_byte() {
   unsigned char byte = 0;
-  byte ^= (unsigned char)(HuffTree.get_result_bits_count() & 7);
+  size_t all_result_size = HuffTree.get_result_bits_count();  
+  unused_bits = (8 - (all_result_size & 7)) & 7;
+  byte ^= (unsigned char)(unused_bits << 0);
   FW->put_byte(byte);
 }
 
@@ -75,13 +83,29 @@ void CCompressor::write_tree() {
 
 void CCompressor::uncompress(const string &input_file_name,
                              const string &output_file_name) {
-  FR = new CFileReader(input_file_name);
-  CFileReaderCloser FRC(FR);
-  FW = new CFileWriter(output_file_name);
-  CFileWriterCloser FWC(FW);
+  try {
+    FR = new CFileReader(input_file_name);   CFileReaderCloser FRC(FR);
+    FW = new CFileWriter(output_file_name);  CFileWriterCloser FWC(FW);
 
-  unsigned char inform_byte = FR->get_byte();
-  read_tree();
+    read_information_byte();
+    read_tree();
+    FR->get_bits(unused_bits); // erase unused bits
+
+    while(!FR->eof()) {
+      CHuffmanTree::iterator it = HuffTree.begin();
+      while(!it.leaf())
+        it.go(FR->get_bit());
+      FW->put_byte(*it);
+    }
+  } catch(string error_message) {
+    cout << "ERROR! Decompress failed: " << endl;
+    cout << error_message << endl;
+  }
+}
+
+void CCompressor::read_information_byte() {
+  unsigned char byte = FR->get_byte();
+  unused_bits = (byte >> 0) & 7;
 }
 
 void CCompressor::read_tree() {

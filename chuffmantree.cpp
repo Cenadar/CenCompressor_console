@@ -32,17 +32,22 @@ void CHuffmanTree::build(const map<unsigned char, size_t> &frequency) {
   DFS(root, new vector<bool>);
 }
 
+#include <iostream>
+
 void CHuffmanTree::build(const map<unsigned char, vector<bool> > &code) {
   erase();
+  root = new TTree();
 
-  /*vector<bool>::iterator it =
-  DFS_set(root, it v, .end());*/
+  for(map<unsigned char, vector<bool> >::const_iterator it = code.begin();
+      it != code.end(); ++it) {
+    DFS_set(root, it->first, it->second);
+  }
 }
 
 void CHuffmanTree::erase() {
   result_bits_count = 0;
   erase(root);
-  root = NULL;
+  root = NULL;  
 }
 
 void CHuffmanTree::erase(PTree node) {
@@ -59,7 +64,9 @@ const vector<bool> &CHuffmanTree::get_code(unsigned char curchar) {
 
 void CHuffmanTree::DFS(PTree vertex, vector<bool> *code) {
   if (vertex->left == NULL) {
-    result_bits_count += code->size()*vertex->times;
+    result_bits_count += code->size()*vertex->times; // for replacing symbols
+    result_bits_count += code->size();               // for writing code
+    result_bits_count += 8;                          // for writing code size
     char_code[vertex->data] = *code;
   } else {
     code->push_back(0);
@@ -71,4 +78,20 @@ void CHuffmanTree::DFS(PTree vertex, vector<bool> *code) {
     code->pop_back();
   }
   if (code->empty()) delete code;
+}
+
+void CHuffmanTree::DFS_set(PTree vertex, unsigned char cur_char,
+                           const vector<bool> &code) {
+  PTree *next = NULL;
+  for(vector<bool>::const_iterator it = code.begin(); it != code.end();
+      ++it, vertex = *next) {
+    if (*it == 0)
+      next = &vertex->left;
+    else
+      next = &vertex->right;    
+
+    if (*next == NULL) *next = new TTree();
+  }
+  vertex->leaf = true;
+  vertex->data = cur_char;
 }
