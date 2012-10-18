@@ -32,8 +32,6 @@ void CHuffmanTree::build(const map<unsigned char, size_t> &frequency) {
   DFS(root, new vector<bool>);
 }
 
-#include <iostream>
-
 void CHuffmanTree::build(const map<unsigned char, vector<bool> > &code) {
   erase();
   root = new TTree();

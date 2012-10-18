@@ -33,18 +33,22 @@ typedef struct tagTree {
 class CHuffmanTreeIterator {
  public:
   void go(bool bit) {
-    assert(vertex != NULL);
+    if (vertex == NULL) throw string("File was damaged");
+    //assert(vertex != NULL);
     if (bit == 0)
       vertex = vertex->left;
     else
       vertex = vertex->right;
   }
+
   bool leaf() const {
-    assert(vertex != NULL);
+    if (vertex == NULL) throw string("File was damaged");
+    //assert(vertex != NULL);
     return vertex->leaf;
   }
   unsigned char operator *() const {
-    assert(vertex != NULL);
+    if (vertex == NULL) throw string("File was damaged");
+    //assert(vertex != NULL);
     return vertex->data;
   }
   CHuffmanTreeIterator(): vertex(NULL) {}

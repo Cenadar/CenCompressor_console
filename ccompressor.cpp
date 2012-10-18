@@ -4,6 +4,21 @@
 #include "cfilereader.h"
 #include "cfilewriter.h"
 
+class CSomething
+{
+public:
+  void fff(int x)
+  {
+    if (x > 0)
+      {
+
+      }
+    if (x > 0) {
+
+      }
+  }
+};
+
 class CFileReaderCloser {
  public:
   CFileReaderCloser(CFileReader *FR_): FR(FR_) {}
