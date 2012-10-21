@@ -1,5 +1,6 @@
 #include <QtCore/QCoreApplication>
 #include "ccompressor.h"
+#include <logger.h>
 #include <iostream>
 
 void usage() {
@@ -13,17 +14,29 @@ void usage() {
   "    x: eXtract\n";
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {  
   if (argc < 4) {
     usage();
     return 0;
-  }
+  }  
   if (string(argv[1]) == "a") {
-    CCompressor Compressor;
-    Compressor.compress(argv[3], argv[2]);
+    ILogger *logger = new CFileLogger("log.txt", true);
+
+    CFileByteReader *BR = new CFileByteReader(argv[3]);
+    CCompressor Compressor(BR, logger);
+    Compressor.compress(argv[2]);
+    delete BR;
+
+    delete logger;
   } else if (string(argv[1]) == "x") {
-    CCompressor Compressor;
-    Compressor.uncompress(argv[2], argv[3]);
+    ILogger *logger = new CFileLogger("log.txt", true);
+
+    CFileByteReader *BR = new CFileByteReader(argv[2]);
+    CCompressor Compressor(BR, logger);
+    Compressor.uncompress(argv[3]);
+    delete BR;
+
+    delete logger;
   } else {
     usage();
     return 0;

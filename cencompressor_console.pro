@@ -18,13 +18,15 @@ SOURCES += main.cpp \
     ccompressor.cpp \
     chuffmantree.cpp \
     cfilewriter.cpp \
-    cfilereader.cpp
+    cbitreader.cpp \
+    logger.cpp
 
 HEADERS += \
     ccompressor.h \
     chuffmantree.h \
     cfilewriter.h \
-    cfilereader.h
+    logger.h \
+    cbitreader.h
 
 OTHER_FILES += \
     README.md

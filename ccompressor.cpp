@@ -1,30 +1,16 @@
 // TODO: correct work with empty file
 
 #include "ccompressor.h"
-#include "cfilereader.h"
+#include "cbitreader.h"
 #include "cfilewriter.h"
+#include <cstdlib>
 
-class CSomething
-{
-public:
-  void fff(int x)
-  {
-    if (x > 0)
-      {
-
-      }
-    if (x > 0) {
-
-      }
-  }
-};
-
-class CFileReaderCloser {
+class CBitReaderCloser {
  public:
-  CFileReaderCloser(CFileReader *FR_): FR(FR_) {}
-  ~CFileReaderCloser() {delete FR;}
+  CBitReaderCloser(CBitReader *BR_): BR(BR_) {}
+  ~CBitReaderCloser() {delete BR;}
  private:
-  CFileReader *FR;
+  CBitReader *BR;
 };
 
 class CFileWriterCloser {
@@ -37,30 +23,31 @@ class CFileWriterCloser {
 
 // Compressing
 
-void CCompressor::compress(const string &input_file_name,
-                           const string &output_file_name) {  
+void CCompressor::compress(const string &output_file_name) {
   try {
     FW = new CFileWriter(output_file_name);
     CFileWriterCloser FWC(FW);
 
+    // Calculating
     frequency.clear();
-    FR = new CFileReader(input_file_name);
-    while(!FR->eof()) ++frequency[FR->get_byte()];
-    delete FR;
+    BR.reload();
+    while(!BR.eof()) ++frequency[BR.get_byte()];
     HuffTree.build(frequency);
 
+    // Replacing
     write_information_byte();
     write_tree();
     FW->put_bits(vector<bool>(unused_bits, false));
 
-    FR = new CFileReader(input_file_name);
-    while(!FR->eof()) FW->put_bits(HuffTree.get_code(FR->get_byte()));
-    delete FR;
+    BR.reload();
+    while(!BR.eof()) FW->put_bits(HuffTree.get_code(BR.get_byte()));    
 
-    cout << "Compressed succesffully" << endl;
-    cout << "Input file size: " << HuffTree.get_input_file_size() << endl;
-    cout << "Output file size: ";
-    cout << (HuffTree.get_result_bits_count() + 7)/8 << endl;
+    // Logging
+    logger->log("Compressed succesffully");
+    logger->log("Input file size: " +
+                itoa(HuffTree.get_input_file_size()));
+    logger->log("Output file size: " +
+                itoa((HuffTree.get_result_bits_count() + 7)/8));
   } catch(string error_message) {
     cout << "ERROR! Compress failed: " << endl;
     cout << error_message << endl;
@@ -96,45 +83,43 @@ void CCompressor::write_tree() {
 
 // Uncompressing
 
-void CCompressor::uncompress(const string &input_file_name,
-                             const string &output_file_name) {
+void CCompressor::uncompress(const string &output_file_name) {
   try {
-    FR = new CFileReader(input_file_name);   CFileReaderCloser FRC(FR);
     FW = new CFileWriter(output_file_name);  CFileWriterCloser FWC(FW);
 
     read_information_byte();
     read_tree();
-    FR->get_bits(unused_bits); // erase unused bits
+    BR.get_bits(unused_bits); // erase unused bits
 
-    while(!FR->eof()) {
+    while(!BR.eof()) {
       CHuffmanTree::iterator it = HuffTree.begin();
       while(!it.leaf())
-        it.go(FR->get_bit());
+        it.go(BR.get_bit());
       FW->put_byte(*it);
     }
   } catch(string error_message) {
     cout << "ERROR! Decompress failed: " << endl;
     cout << error_message << endl;
-  }
+  }  
 }
 
 void CCompressor::read_information_byte() {
-  unsigned char byte = FR->get_byte();
+  unsigned char byte = BR.get_byte();
   unused_bits = (byte >> 0) & 7;
 }
 
 void CCompressor::read_tree() {
-  vector<bool> used = FR->get_bits(256);
+  vector<bool> used = BR.get_bits(256);
   map<unsigned char, unsigned char> code_length;
   map<unsigned char, vector<bool> > codes;
 
   for(unsigned int i = 0; i < 256; ++i)
     if (used[i])
-      code_length[i] = FR->get_byte();
+      code_length[i] = BR.get_byte();
 
   for(unsigned int i = 0; i < 256; ++i)
     if (used[i])
-      codes[i] = FR->get_bits(code_length[i]);
+      codes[i] = BR.get_bits(code_length[i]);
 
   HuffTree.build(codes);
 }
