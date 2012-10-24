@@ -1,5 +1,5 @@
-#ifndef CFILEREADER_H
-#define CFILEREADER_H
+#ifndef CBITREADER_H
+#define CBITREADER_H
 
 #include <vector>
 #include <string>
@@ -10,6 +10,7 @@ using namespace std;
 
 class IByteReader {
  public:
+  virtual ~IByteReader() {}
   virtual bool eof() = 0;
   virtual unsigned char next_byte() = 0;
   virtual void reload() {
@@ -39,7 +40,9 @@ class CFileByteReader: public IByteReader {
 class CBitReader {
  public:
   CBitReader(IByteReader *byte_reader_): byte_reader(byte_reader_) {}
-  ~CBitReader() {}
+  ~CBitReader() {
+    close();
+  }
 
   bool eof();
   bool get_bit();
@@ -49,11 +52,11 @@ class CBitReader {
   void read_byte();
 
   void open() {byte_reader->open();}
-  void close() {byte_reader->close();}
+  void close() {delete byte_reader;}
   void reload() {byte_reader->reload();}
  private:
   IByteReader *byte_reader;
   queue<bool> bits_queue;
 };
 
-#endif // CFILEREADER_H
+#endif // CBITREADER_H

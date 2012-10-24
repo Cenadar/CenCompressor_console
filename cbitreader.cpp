@@ -1,11 +1,5 @@
 #include "cbitreader.h"
-
 #include <iostream>
-
-void CFileByteReader::open() {
-  fin.open(file_name.c_str(), ios::binary);
-  if (!fin.is_open()) throw string("Cannot open input file: ") + file_name;
-}
 
 bool CFileByteReader::eof() {
   return fin.peek() == -1;
@@ -14,6 +8,11 @@ bool CFileByteReader::eof() {
 unsigned char CFileByteReader::next_byte() {
   if (eof()) throw string("Unexpected end of file");
   return fin.get();
+}
+
+void CFileByteReader::open() {
+  fin.open(file_name.c_str(), ios::binary);
+  if (!fin.is_open()) throw string("Cannot open input file: ") + file_name;
 }
 
 void CFileByteReader::close() {

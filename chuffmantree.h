@@ -30,11 +30,11 @@ typedef struct tagTree {
   tagTree(): left(NULL), right(NULL), leaf(false), data(abstract_char_value) {}
 } TTree, *PTree;
 
+
 class CHuffmanTreeIterator {
  public:
   void go(bool bit) {
     if (vertex == NULL) throw string("File was damaged");
-    //assert(vertex != NULL);
     if (bit == 0)
       vertex = vertex->left;
     else
@@ -43,12 +43,10 @@ class CHuffmanTreeIterator {
 
   bool leaf() const {
     if (vertex == NULL) throw string("File was damaged");
-    //assert(vertex != NULL);
     return vertex->leaf;
   }
   unsigned char operator *() const {
     if (vertex == NULL) throw string("File was damaged");
-    //assert(vertex != NULL);
     return vertex->data;
   }
   CHuffmanTreeIterator(): vertex(NULL) {}
@@ -57,6 +55,7 @@ class CHuffmanTreeIterator {
  private:
   PTree vertex;
 };
+
 
 class CHuffmanTree {
  public:

@@ -12,6 +12,7 @@ void debug();
 class ILogger {
  public:
   ILogger(bool include_time_): include_time(include_time_) {}
+  virtual ~ILogger() {}
 
   void virtual log(const char* val) = 0;
   void log(const string& val) {log(val.c_str());}
@@ -27,6 +28,7 @@ class ILogger {
  protected:
   bool include_time;
 };
+
 
 class CFileLogger: public ILogger {
  public:
@@ -47,6 +49,7 @@ class CFileLogger: public ILogger {
  private:
   ofstream fout;
 };
+
 
 string itoa(size_t v);
 

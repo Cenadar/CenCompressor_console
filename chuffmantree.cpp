@@ -10,6 +10,7 @@ struct comp {
   }
 };
 
+
 void CHuffmanTree::build(const map<unsigned char, size_t> &frequency) {
   erase();
   if (frequency.empty()) return;

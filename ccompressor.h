@@ -12,17 +12,20 @@
 #include <bitset>
 #include "chuffmantree.h"
 #include "cbitreader.h"
-#include "cfilewriter.h"
+#include "cbitwriter.h"
 #include "logger.h"
 
 using namespace std;
 
 class CCompressor {
  public:
-  CCompressor(IByteReader *BR_, ILogger *logger_): BR(BR_), logger(logger_) {}
-  ~CCompressor() {}
-  void compress(const string &output_file_name);
-  void uncompress(const string &output_file_name);
+  CCompressor(IByteReader *BR_, IByteWriter *BW_, ILogger *logger_):
+    BR(BR_), BW(BW_), logger(logger_) {}
+
+  ~CCompressor() {delete logger;}
+
+  void compress();
+  void uncompress();
  private:
   void write_information_byte();
   void write_tree();
@@ -31,7 +34,7 @@ class CCompressor {
 
   size_t unused_bits;
   CBitReader BR;
-  CFileWriter *FW;
+  CBitWriter BW;
   map<unsigned char, size_t> frequency;
   CHuffmanTree HuffTree;
 
