@@ -11,45 +11,52 @@ void debug();
 
 class ILogger {
  public:
-  ILogger(bool include_time_): include_time(include_time_) {}
   virtual ~ILogger() {}
 
-  void virtual log(const char* val) = 0;
-  void log(const string& val) {log(val.c_str());}
-  const string get_time() {
-    time_t rawtime;
-    struct tm *timeinfo;
+  void virtual log(const string& val) = 0;
+};
 
-    time(&rawtime);
-    timeinfo = localtime (&rawtime);
-    string res = asctime(timeinfo);
-    return res.substr(0, res.size() - 1);
-  }
+
+class CLogger: public ILogger {
+ public:
+  CLogger(bool include_time_): include_time(include_time_) {}
+  ~CLogger() {}
+
  protected:
+  const string get_time();
+
   bool include_time;
 };
 
 
-class CFileLogger: public ILogger {
+class CFileLogger: public CLogger {
  public:
   CFileLogger(const string& file_name, bool include_time_):
-    ILogger(include_time_),
+    CLogger(include_time_),
     fout(file_name.c_str()) {}
 
   CFileLogger(const char* file_name, bool include_time_):
-    ILogger(include_time_),
+    CLogger(include_time_),
     fout(file_name) {}
 
   ~CFileLogger() {fout.close();}
 
-  void log(const char* val) {
-    if (include_time) fout << get_time() << ": ";
-    fout << val << endl;
-  }
- private:
+  void log(const string &val);
+private:
   ofstream fout;
 };
 
+
+class CStreamLogger: public CLogger {
+ public:
+  CStreamLogger(ostream &out_, bool include_time_):
+    CLogger(include_time_),
+    out(&out_) {}
+
+  void log(const string &val);
+ private:
+  ostream *out;
+};
 
 string itoa(size_t v);
 

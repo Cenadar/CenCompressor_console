@@ -34,14 +34,24 @@ class CFileByteWriter: public IByteWriter {
 };
 
 
-class CBitWriter {
+class IBitWriter {
  public:
+  virtual ~IBitWriter() {}
+
+  virtual void put_bit(bool bit) = 0;
+  virtual void put_byte(unsigned char byte) = 0;
+  virtual void put_bits(const vector<bool> &bits) = 0;
+};
+
+
+class CBitWriter: public IBitWriter {
+ public:
+  CBitWriter(IByteWriter *byte_writer_): byte_writer(byte_writer_) {}
+  ~CBitWriter();
+
   void put_bit(bool bit);
   void put_byte(unsigned char byte);
   void put_bits(const vector<bool> &bits);
-
-  CBitWriter(IByteWriter *byte_writer_): byte_writer(byte_writer_) {}
-  ~CBitWriter();
  private:
   void try_put();
 

@@ -31,8 +31,11 @@ typedef struct tagTree {
 } TTree, *PTree;
 
 
-class CHuffmanTreeIterator {
+class CTreePrivacySaver {
  public:
+  CTreePrivacySaver(const PTree vertex_): vertex(vertex_) {}
+  CTreePrivacySaver(const CTreePrivacySaver& a): vertex(a.vertex) {}
+
   void go(bool bit) {
     if (vertex == NULL) throw string("File was damaged");
     if (bit == 0)
@@ -45,25 +48,40 @@ class CHuffmanTreeIterator {
     if (vertex == NULL) throw string("File was damaged");
     return vertex->leaf;
   }
-  unsigned char operator *() const {
+
+  unsigned char data() const {
     if (vertex == NULL) throw string("File was damaged");
     return vertex->data;
   }
-  CHuffmanTreeIterator(): vertex(NULL) {}
-  CHuffmanTreeIterator(PTree vertex_): vertex(vertex_) {}
-  CHuffmanTreeIterator(const CHuffmanTreeIterator &a): vertex(a.vertex) {}
  private:
   PTree vertex;
 };
 
 
-class CHuffmanTree {
+class CHuffmanTreeIterator {
+ public:
+  CHuffmanTreeIterator():
+    vertex(new CTreePrivacySaver(NULL)) {}
+  CHuffmanTreeIterator(PTree vertex_):
+    vertex(new CTreePrivacySaver(vertex_)) {}
+  CHuffmanTreeIterator(const CHuffmanTreeIterator &a):
+    vertex(new CTreePrivacySaver(*a.vertex)) {}
+
+  CTreePrivacySaver* operator ->() const {return vertex;}
+ private:
+  CTreePrivacySaver *vertex;
+};
+
+
+class CHuffmanTree/*: public IHuffmanTree*/ {
  public:
   typedef CHuffmanTreeIterator iterator;
-  const iterator begin() const {return iterator(root);}
 
   CHuffmanTree(): root(NULL), result_bits_count(0) {}
   ~CHuffmanTree();
+
+  const iterator begin() const {return iterator(root);}
+
   void build(const map<unsigned char, size_t> &frequency);
   void build(const map<unsigned char, vector<bool> > &code);
 

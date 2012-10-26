@@ -19,6 +19,11 @@ void CFileByteReader::close() {
   fin.close();
 }
 
+void CFileByteReader::reload() {
+  close();
+  open();
+}
+
 
 
 bool CBitReader::eof() {
